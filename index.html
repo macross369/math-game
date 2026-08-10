@@ -2,8 +2,16 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>數學計算能力挑戰王</title>
+
+    <!-- PWA Web App Manifest 內嵌設置 -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"數學計算能力挑戰王","short_name":"數學挑戰王","description":"多重主題數學大挑戰，支援語音辨識與錯題 PDF 匯出！","start_url":".","display":"standalone","background_color":"#EEF2FF","theme_color":"#4F46E5","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%234F46E5%22/><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="數學挑戰王">
+
     <!-- 引入 Tailwind CSS 進行現代化響應式排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 FontAwesome 圖示 -->
@@ -11,7 +19,8 @@
     <!-- 引入 html2pdf 庫供匯出 PDF 使用 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center p-3 md:p-6 text-gray-800">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center p-3 md:p-4 text-gray-800">
+
 
 <!-- 修改：使用轉換後的 Google Drive 直接連結 -->
 <div class="w-full max-w-4xl flex items-center justify-start mb-4 px-2 fade-in">
@@ -19,61 +28,84 @@
     <span class="text-xl md:text-2xl font-bold text-white drop-shadow-lg tracking-wider" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">閒雲數學小棧</span>
 </div>
 
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-5 md:p-8 transition-all duration-300 my-auto">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-5 md:p-8 transition-all duration-300">
         
-        <!-- 標題列 -->
-        <div class="text-center mb-5">
+        <!-- 標題列與 PWA 安裝按鈕 -->
+        <div class="text-center mb-5 relative">
             <h1 class="text-2xl md:text-4xl font-extrabold text-indigo-600 flex items-center justify-center gap-2 md:gap-3">
                 <i class="fa-solid fa-crown text-yellow-500"></i> 數學計算能力挑戰王
             </h1>
-            <p class="text-gray-500 mt-1.5 text-xs md:text-sm">多重主題數學大挑戰，支援語音辨識、螢幕觸控鍵盤與錯題 PDF 匯出！</p>
+            <p class="text-gray-500 mt-1 text-xs md:text-sm">多重主題數學大挑戰，支援語音辨識與錯題 PDF 完美匯出！</p>
+            
+            <!-- PWA 安裝按鈕（若瀏覽器支援離線安裝會自動顯示） -->
+            <button id="pwa-install-btn" onclick="installPWA()" class="hidden mt-3 inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs rounded-full shadow-md hover:opacity-90 transition animate-bounce">
+                <i class="fa-solid fa-download"></i> 安裝為手機 App
+            </button>
         </div>
 
         <!-- 畫面一：設定區 -->
         <div id="setup-screen" class="space-y-5">
-            <div class="bg-indigo-50/70 p-4 md:p-5 rounded-2xl border border-indigo-100 space-y-4">
+            <div class="bg-indigo-50/60 p-4 md:p-5 rounded-2xl border border-indigo-100 space-y-4">
                 
-                <!-- 四大主要主題選擇 (馬卡龍色系按鈕) -->
+                <!-- 1. 選擇測驗主題 -->
                 <div>
-                    <label class="block font-extrabold text-gray-800 text-sm md:text-base mb-2.5">
+                    <label class="block font-bold text-gray-700 text-sm md:text-base mb-2">
                         <i class="fa-solid fa-book-open text-indigo-500 mr-1.5"></i> 選擇測驗主題：
                     </label>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        <label id="topic-label-multiply" class="flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 shadow-sm">
-                            <input type="radio" name="topic" value="multiply" checked onclick="updateModeOptions()" class="hidden">
-                            <span class="text-xs md:text-sm font-black flex items-center gap-1"><i class="fa-solid fa-xmark text-xs"></i> 乘法運算</span>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="topic" value="multiply" checked onclick="updateCategoryOptions()" class="peer hidden">
+                            <div class="p-2.5 bg-rose-100/70 border-2 border-rose-200 rounded-xl text-center text-rose-800 font-bold text-xs sm:text-sm peer-checked:border-rose-500 peer-checked:bg-rose-200/80 peer-checked:shadow-sm transition">
+                                乘法運算
+                            </div>
                         </label>
-                        <label id="topic-label-add" class="flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 shadow-sm">
-                            <input type="radio" name="topic" value="add" onclick="updateModeOptions()" class="hidden">
-                            <span class="text-xs md:text-sm font-black flex items-center gap-1"><i class="fa-solid fa-plus text-xs"></i> 加法運算</span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="topic" value="add" onclick="updateCategoryOptions()" class="peer hidden">
+                            <div class="p-2.5 bg-amber-100/70 border-2 border-amber-200 rounded-xl text-center text-amber-800 font-bold text-xs sm:text-sm peer-checked:border-amber-500 peer-checked:bg-amber-200/80 peer-checked:shadow-sm transition">
+                                加法運算
+                            </div>
                         </label>
-                        <label id="topic-label-sub" class="flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 shadow-sm">
-                            <input type="radio" name="topic" value="sub" onclick="updateModeOptions()" class="hidden">
-                            <span class="text-xs md:text-sm font-black flex items-center gap-1"><i class="fa-solid fa-minus text-xs"></i> 減法運算</span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="topic" value="sub" onclick="updateCategoryOptions()" class="peer hidden">
+                            <div class="p-2.5 bg-sky-100/70 border-2 border-sky-200 rounded-xl text-center text-sky-800 font-bold text-xs sm:text-sm peer-checked:border-sky-500 peer-checked:bg-sky-200/80 peer-checked:shadow-sm transition">
+                                減法運算
+                            </div>
                         </label>
-                        <label id="topic-label-divide" class="flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 shadow-sm">
-                            <input type="radio" name="topic" value="divide" onclick="updateModeOptions()" class="hidden">
-                            <span class="text-xs md:text-sm font-black flex items-center gap-1"><i class="fa-solid fa-divide text-xs"></i> 除法運算</span>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="topic" value="div" onclick="updateCategoryOptions()" class="peer hidden">
+                            <div class="p-2.5 bg-emerald-100/70 border-2 border-emerald-200 rounded-xl text-center text-emerald-800 font-bold text-xs sm:text-sm peer-checked:border-emerald-500 peer-checked:bg-emerald-200/80 peer-checked:shadow-sm transition">
+                                除法運算
+                            </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- 次類別與題型模式容器 -->
+                <!-- 2. 選擇細分類別 -->
                 <div>
-                    <label class="block font-extrabold text-gray-800 text-sm md:text-base mb-2.5">
-                        <i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i> 選擇類別與題型模式：
+                    <label class="block font-bold text-gray-700 text-base md:text-lg mb-2">
+                        <i class="fa-solid fa-list-check text-indigo-500 mr-1.5"></i> 選擇細分類別：
                     </label>
-                    <div class="grid grid-cols-1 gap-3" id="mode-container">
-                        <!-- 動態切換顯示 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="category-container">
+                        <!-- 動態切換次類別 -->
                     </div>
                 </div>
 
-                <!-- 選擇秒數 -->
+                <!-- 3. 選擇題型模式 -->
                 <div>
-                    <label class="block font-extrabold text-gray-800 text-sm md:text-base mb-2">
+                    <label class="block font-bold text-gray-700 text-base md:text-lg mb-2">
+                        <i class="fa-solid fa-layer-group text-indigo-500 mr-1.5"></i> 選擇題型模式：
+                    </label>
+                    <div class="grid grid-cols-1 gap-2.5" id="mode-container">
+                        <!-- 動態切換模式 -->
+                    </div>
+                </div>
+
+                <!-- 4. 選擇秒數 -->
+                <div>
+                    <label class="block font-bold text-gray-700 text-sm md:text-base mb-2">
                         <i class="fa-solid fa-stopwatch text-indigo-500 mr-1.5"></i> 每題限制秒數：
                     </label>
-                    <select id="time-limit" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold text-sm md:text-base">
+                    <select id="time-limit" class="w-full p-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm">
                         <option value="1">1 秒 (閃電極速)</option>
                         <option value="2">2 秒 (高壓挑戰)</option>
                         <option value="3">3 秒 (極速挑戰)</option>
@@ -84,7 +116,7 @@
                 </div>
             </div>
 
-            <button onclick="startGame()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base md:text-lg rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <button onclick="startGame()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-lg rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-play"></i> 開始挑戰
             </button>
         </div>
@@ -101,54 +133,55 @@
                 </div>
             </div>
 
-            <!-- 牌卡區 -->
-            <div onclick="manualStartSpeech()" title="點擊嘗試啟用麥克風" class="flex flex-col items-center justify-center py-7 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-inner text-white relative overflow-hidden cursor-pointer hover:opacity-95 transition">
-                <div class="text-4xl md:text-6xl font-black tracking-wider drop-shadow-md select-none" id="card-question">
+            <!-- 牌卡區（可點擊手動觸發麥克風） -->
+            <div onclick="requestMicPermission()" class="cursor-pointer flex flex-col items-center justify-center py-8 md:py-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl shadow-inner text-white relative overflow-hidden active:scale-[0.99] transition">
+                <div class="text-4xl sm:text-6xl md:text-7xl font-black tracking-wider drop-shadow-md select-none" id="card-question">
                     15 + 7 = ?
                 </div>
-                <div class="mt-4 flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs md:text-sm font-medium animate-pulse select-none text-center" id="mic-status-text">
-                    <i class="fa-solid fa-microphone text-red-300"></i> 請說出答案 (或點擊嘗試開啟麥克風)
+                <div class="mt-4 flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium animate-pulse" id="mic-status-text">
+                    <i class="fa-solid fa-microphone text-red-300"></i> 請直接口述或點此啟動語音
                 </div>
             </div>
 
-            <!-- 輸入與螢幕觸控數字鍵盤區 -->
-            <div class="space-y-3 bg-gray-50 p-3.5 rounded-2xl border">
-                <div class="flex items-center justify-between text-xs text-gray-500">
-                    <span>語音辨識：<b id="transcript" class="text-indigo-600 italic">（等待中...）</b></span>
-                    <span class="text-gray-400">可用螢幕鍵盤作答</span>
+            <!-- 即時辨識結果與手動輸入備用區 -->
+            <div class="space-y-2.5">
+                <div class="text-center text-xs text-gray-500">
+                    語音辨識：<span id="transcript" class="font-bold text-indigo-600 italic">（等待語音中...）</span>
                 </div>
                 
-                <!-- 手動輸入顯示框與送出按鈕 (已調小輸入框寬度並居中排列) -->
                 <div class="flex justify-center items-center gap-2">
-                    <input type="number" id="manual-input" placeholder="答案" class="w-28 p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-xl font-bold bg-white" onkeydown="if(event.key==='Enter') submitManualAnswer()">
-                    <button onclick="submitManualAnswer()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-paper-plane"></i> 送出
-                    </button>
+                    <input type="number" id="manual-input" placeholder="答案" class="w-28 p-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg font-bold">
+                    <button onclick="submitManualAnswer()" class="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 active:bg-black text-white font-bold rounded-xl transition text-sm">送出</button>
                 </div>
 
-                <!-- 螢幕觸控數字大鍵盤 (適合 GAS / 平板 / 觸控大屏) -->
-                <div class="grid grid-cols-3 gap-1.5 max-w-xs mx-auto pt-1">
-                    <button onclick="pressKey('1')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">1</button>
-                    <button onclick="pressKey('2')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">2</button>
-                    <button onclick="pressKey('3')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">3</button>
-                    <button onclick="pressKey('4')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">4</button>
-                    <button onclick="pressKey('5')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">5</button>
-                    <button onclick="pressKey('6')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">6</button>
-                    <button onclick="pressKey('7')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">7</button>
-                    <button onclick="pressKey('8')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">8</button>
-                    <button onclick="pressKey('9')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">9</button>
-                    <button onclick="pressKey('clear')" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-sm rounded-xl shadow-sm border border-rose-200 flex items-center justify-center gap-1"><i class="fa-solid fa-rotate-left"></i> 清除</button>
-                    <button onclick="pressKey('0')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 text-gray-800 font-extrabold text-lg rounded-xl shadow-sm border border-gray-200">0</button>
-                    <button onclick="pressKey('back')" class="py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-sm rounded-xl shadow-sm border border-amber-200 flex items-center justify-center gap-1"><i class="fa-solid fa-delete-left"></i> 退格</button>
+                <!-- 螢幕觸控數字鍵盤 (針對手機/平板優化) -->
+                <div class="bg-gray-100 p-2.5 rounded-2xl border space-y-2">
+                    <div class="grid grid-cols-5 gap-1.5 max-w-sm mx-auto">
+                        <button onclick="pressKey('1')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">1</button>
+                        <button onclick="pressKey('2')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">2</button>
+                        <button onclick="pressKey('3')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">3</button>
+                        <button onclick="pressKey('4')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">4</button>
+                        <button onclick="pressKey('5')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">5</button>
+                        <button onclick="pressKey('6')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">6</button>
+                        <button onclick="pressKey('7')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">7</button>
+                        <button onclick="pressKey('8')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">8</button>
+                        <button onclick="pressKey('9')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">9</button>
+                        <button onclick="pressKey('0')" class="py-2.5 bg-white hover:bg-indigo-50 active:bg-indigo-100 rounded-xl font-black text-lg text-gray-700 shadow-sm border border-gray-200">0</button>
+                    </div>
+                    <div class="flex justify-center gap-2 max-w-sm mx-auto">
+                        <button onclick="pressKey('clear')" class="flex-1 py-1.5 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold rounded-xl text-xs shadow">清除</button>
+                        <button onclick="pressKey('back')" class="flex-1 py-1.5 bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white font-bold rounded-xl text-xs shadow">退格 ⌫</button>
+                        <button onclick="submitManualAnswer()" class="flex-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl text-xs shadow">送出 ↵</button>
+                    </div>
                 </div>
             </div>
 
             <!-- 控制按鈕列：暫停與中止 -->
-            <div class="grid grid-cols-2 gap-3 pt-1">
-                <button id="pause-btn" onclick="togglePause()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                <button id="pause-btn" onclick="togglePause()" class="py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-pause"></i> 暫停遊戲
                 </button>
-                <button onclick="abortGame()" class="py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
+                <button onclick="abortGame()" class="py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-stop"></i> 中止挑戰
                 </button>
             </div>
@@ -160,41 +193,41 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-full text-3xl mb-1">
                     <i class="fa-solid fa-award"></i>
                 </div>
-                <h2 id="result-title" class="text-2xl md:text-3xl font-extrabold text-gray-800">挑戰完成！</h2>
-                <p class="text-gray-500 text-xs md:text-sm">來看看你的計算能力表現與錯題分析吧！</p>
+                <h2 id="result-title" class="text-2xl font-extrabold text-gray-800">挑戰完成！</h2>
+                <p class="text-gray-500 text-xs">來看看你的計算能力表現與錯題分析吧！</p>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="bg-green-50 border border-green-200 p-3.5 rounded-2xl text-center">
+                <div class="bg-green-50 border border-green-200 p-3 rounded-2xl text-center">
                     <div class="text-xs text-green-600 font-semibold">答對題數</div>
-                    <div id="correct-count" class="text-2xl md:text-3xl font-extrabold text-green-700 mt-0.5">0</div>
+                    <div id="correct-count" class="text-2xl font-extrabold text-green-700 mt-0.5">0</div>
                 </div>
-                <div class="bg-red-50 border border-red-200 p-3.5 rounded-2xl text-center">
+                <div class="bg-red-50 border border-red-200 p-4 rounded-2xl text-center">
                     <div class="text-xs text-red-600 font-semibold">錯題/未完成題數</div>
-                    <div id="wrong-count" class="text-2xl md:text-3xl font-extrabold text-red-700 mt-0.5">0</div>
+                    <div id="wrong-count" class="text-2xl font-extrabold text-red-700 mt-0.5">0</div>
                 </div>
             </div>
 
             <!-- 錯題清單區塊 (供畫面檢視與匯出 PDF 使用) -->
-            <div id="pdf-export-area" class="space-y-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-center border-b pb-2.5">
-                    <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
+            <div id="pdf-export-area" class="space-y-2.5 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-gray-800 text-sm md:text-base flex items-center gap-1.5">
                         <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 需要加強的錯題記錄
                     </h3>
-                    <span class="text-xs text-gray-500 font-medium">數學計算能力挑戰王 報告</span>
+                    <span class="text-[10px] text-gray-400 font-medium">數學計算能力挑戰王 報告</span>
                 </div>
                 
-                <div id="wrong-list-container" class="max-h-60 overflow-y-auto space-y-2">
+                <div id="wrong-list-container" class="max-h-52 overflow-y-auto space-y-1.5">
                     <!-- 動態填入 -->
                 </div>
             </div>
 
             <!-- 操作按鈕列 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button onclick="downloadPDF()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button onclick="downloadPDF()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-file-pdf"></i> 下載錯題 PDF 檔
                 </button>
-                <button onclick="resetGame()" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2">
+                <button onclick="resetGame()" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-rotate-right"></i> 再次挑戰
                 </button>
             </div>
@@ -204,6 +237,41 @@
 
     <!-- 邏輯控制 JavaScript -->
     <script>
+        // PWA 註冊與安裝事件處理
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('pwa-install-btn');
+            if (btn) btn.classList.remove('hidden');
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        document.getElementById('pwa-install-btn').classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // Service Worker 註冊 (使用 Blob 特殊技巧支援單一檔案離線 App)
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => self.clients.claim());
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+        }
+
+        // 題目與遊戲狀態變數
         let questions = [];
         let currentIndex = 0;
         let correctCount = 0;
@@ -216,247 +284,218 @@
         let isPaused = false;
         let lastTranscript = '';
 
-        window.onload = function() {
-            updateModeOptions();
+        // 主題色系對應配置
+        const colorSchemes = {
+            multiply: { border: 'border-rose-400', bg: 'bg-rose-500', text: 'text-rose-700', activeBg: 'bg-rose-100' },
+            add: { border: 'border-amber-400', bg: 'bg-amber-500', text: 'text-amber-700', activeBg: 'bg-amber-100' },
+            sub: { border: 'border-sky-400', bg: 'bg-sky-500', text: 'text-sky-700', activeBg: 'bg-sky-100' },
+            div: { border: 'border-emerald-400', bg: 'bg-emerald-500', text: 'text-emerald-700', activeBg: 'bg-emerald-100' }
         };
 
-        function updateModeOptions() {
-            const topic = document.querySelector('input[name="topic"]:checked').value;
-            const container = document.getElementById('mode-container');
-            
-            const topics = ['multiply', 'add', 'sub', 'divide'];
-            const colorMap = {
-                multiply: {
-                    active: 'bg-rose-100 border-rose-400 text-rose-800 shadow-md ring-2 ring-rose-300 scale-[1.02]',
-                    inactive: 'bg-rose-50/60 border-rose-200 text-rose-700 hover:bg-rose-100/80',
-                    cardBg: 'bg-rose-50/40 border-rose-200',
-                    badge: 'bg-rose-200 text-rose-900 border-rose-300',
-                    labelBorder: 'border-rose-200 hover:border-rose-400 bg-white',
-                    radio: 'text-rose-600 focus:ring-rose-500'
-                },
-                add: {
-                    active: 'bg-amber-100 border-amber-400 text-amber-800 shadow-md ring-2 ring-amber-300 scale-[1.02]',
-                    inactive: 'bg-amber-50/60 border-amber-200 text-amber-700 hover:bg-amber-100/80',
-                    cardBg: 'bg-amber-50/40 border-amber-200',
-                    badge: 'bg-amber-200 text-amber-900 border-amber-300',
-                    labelBorder: 'border-amber-200 hover:border-amber-400 bg-white',
-                    radio: 'text-amber-600 focus:ring-amber-500'
-                },
-                sub: {
-                    active: 'bg-sky-100 border-sky-400 text-sky-800 shadow-md ring-2 ring-sky-300 scale-[1.02]',
-                    inactive: 'bg-sky-50/60 border-sky-200 text-sky-700 hover:bg-sky-100/80',
-                    cardBg: 'bg-sky-50/40 border-sky-200',
-                    badge: 'bg-sky-200 text-sky-900 border-sky-300',
-                    labelBorder: 'border-sky-200 hover:border-sky-400 bg-white',
-                    radio: 'text-sky-600 focus:ring-sky-500'
-                },
-                divide: {
-                    active: 'bg-emerald-100 border-emerald-400 text-emerald-800 shadow-md ring-2 ring-emerald-300 scale-[1.02]',
-                    inactive: 'bg-emerald-50/60 border-emerald-200 text-emerald-700 hover:bg-emerald-100/80',
-                    cardBg: 'bg-emerald-50/40 border-emerald-200',
-                    badge: 'bg-emerald-200 text-emerald-900 border-emerald-300',
-                    labelBorder: 'border-emerald-200 hover:border-emerald-400 bg-white',
-                    radio: 'text-emerald-600 focus:ring-emerald-500'
-                }
-            };
-
-            topics.forEach(t => {
-                const labelElem = document.getElementById(`topic-label-${t}`);
-                if (labelElem) {
-                    labelElem.className = (t === topic) ? 
-                        `flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${colorMap[t].active}` :
-                        `flex items-center justify-center p-3 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${colorMap[t].inactive}`;
-                }
+        window.onload = function() {
+            updateCategoryOptions();
+            document.getElementById('manual-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') submitManualAnswer();
             });
+        };
 
-            const currentTheme = colorMap[topic];
+        function getCurrentTopic() {
+            return document.querySelector('input[name="topic"]:checked').value;
+        }
 
+        function updateCategoryOptions() {
+            const topic = getCurrentTopic();
+            const container = document.getElementById('category-container');
+            const color = colorSchemes[topic];
+            
+            let html = '';
             if (topic === 'multiply') {
-                container.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別一：九九乘法</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-9x9-standard" checked class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2×1與1×2不同，共81題)</span>
-                                </label>
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-9x9-same" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">精簡模式 (2×1與1×2相同，共45題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別二：十十乘法</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-10x10-standard" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2×1與1×2不同，共100題)</span>
-                                </label>
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-10x10-same" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">精簡模式 (2×1與1×2相同，共55題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別三：特殊計算：25的倍數</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-25" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (25 × 1~8，共8題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別四：特殊計算：125的倍數</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-125" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (125 × 1~8，共8題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別五：11~20 × 2~10</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="mul-11_20x2_10" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (11~20 × 2~10，共90題)</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="mul-1" checked onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別一：九九乘法</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="mul-2" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別二：十十乘法</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="mul-3" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別三：25的倍數</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="mul-4" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別四：125的倍數</div>
+                    </label>
+                    <label class="cursor-pointer sm:col-span-2">
+                        <input type="radio" name="category" value="mul-5" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別五：11~20 × 2~10</div>
+                    </label>
                 `;
             } else if (topic === 'add') {
-                container.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別一：一位數加法</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="add1-distinct" checked class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">進階模式 (A+B與B+A不同，共81題)</span>
-                                </label>
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="add1-same" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">精簡模式 (A+B與B+A相同，共45題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別二：10~19加一位數</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="add10_19-standard" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (共90題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別三：和10運算</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="add_sum10" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (共18題)</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="add-1" checked onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別一：一位數加法</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="add-2" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別二：10~19加一位數</div>
+                    </label>
+                    <label class="cursor-pointer sm:col-span-2">
+                        <input type="radio" name="category" value="add-3" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別三：和 10 運算</div>
+                    </label>
                 `;
             } else if (topic === 'sub') {
-                container.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別一：一位數減法</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="sub1-standard" checked class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (共45題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別二：10~19減一位數</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="sub10_19-standard" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (共90題)</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="sub-1" checked onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別一：一位數減法</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="sub-2" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別二：10~19減一位數</div>
+                    </label>
                 `;
-            } else if (topic === 'divide') {
-                container.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別一：基礎除法</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="div-basic" checked class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (九九乘法逆運算，共72題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別二：初級除法-20以內</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="div-20" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2~20除以因數，共27題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別三：中級除法-40以內</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="div-40" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2~40除以因數，共79題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別四：高級除法-70以內</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="div-70" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2~70除以因數，共174題)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="${currentTheme.cardBg} p-3.5 rounded-2xl border space-y-2.5">
-                            <div class="text-sm font-extrabold ${currentTheme.badge} px-3 py-1 rounded-lg inline-block border">類別五：進階除法-100以內</div>
-                            <div class="grid grid-cols-1 gap-2">
-                                <label class="flex items-center p-2.5 ${currentTheme.labelBorder} rounded-xl cursor-pointer transition shadow-sm">
-                                    <input type="radio" name="mode" value="div-100" class="${currentTheme.radio} h-4 w-4">
-                                    <span class="ml-2 text-sm font-bold text-gray-800">標準模式 (2~100除以因數，共283題)</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+            } else {
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="div-1" checked onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別一：基礎除法</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="div-2" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別二：初級除法-20以內</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="div-3" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別三：中級除法-40以內</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="category" value="div-4" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別四：高級除法-70以內</div>
+                    </label>
+                    <label class="cursor-pointer sm:col-span-2">
+                        <input type="radio" name="category" value="div-5" onclick="updateModeOptions()" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs sm:text-sm font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text} transition">類別五：進階除法-100以內</div>
+                    </label>
                 `;
+            }
+
+            container.innerHTML = html;
+            updateModeOptions();
+        }
+
+        function updateModeOptions() {
+            const categoryEl = document.querySelector('input[name="category"]:checked');
+            if (!categoryEl) return;
+            const category = categoryEl.value;
+            const container = document.getElementById('mode-container');
+            const topic = getCurrentTopic();
+            const color = colorSchemes[topic];
+
+            let html = '';
+            if (category === 'mul-1') {
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="mul-1-std" checked class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">進階模式 (2×1與1×2不同，共81題)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="mul-1-sim" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">精簡模式 (2×1與1×2相同，共45題)</div>
+                    </label>
+                `;
+            } else if (category === 'mul-2') {
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="mul-2-std" checked class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">進階模式 (2×1與1×2不同，共100題)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="mul-2-sim" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">精簡模式 (2×1與1×2相同，共55題)</div>
+                    </label>
+                `;
+            } else if (category === 'mul-3') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="mul-3-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共8題)</div></label>`;
+            } else if (category === 'mul-4') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="mul-4-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共8題)</div></label>`;
+            } else if (category === 'mul-5') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="mul-5-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共90題)</div></label>`;
+            } else if (category === 'add-1') {
+                html = `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="add-1-std" checked class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">進階模式 (A+B與B+A不同，共81題)</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="mode" value="add-1-sim" class="peer hidden">
+                        <div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">精簡模式 (A+B與B+A相同，共45題)</div>
+                    </label>
+                `;
+            } else if (category === 'add-2') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="add-2-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共90題)</div></label>`;
+            } else if (category === 'add-3') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="add-3-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共18題)</div></label>`;
+            } else if (category === 'sub-1') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="sub-1-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共45題)</div></label>`;
+            } else if (category === 'sub-2') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="sub-2-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共90題)</div></label>`;
+            } else if (category === 'div-1') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="div-1-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (九九乘法逆運算，共72題)</div></label>`;
+            } else if (category === 'div-2') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="div-2-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共27題)</div></label>`;
+            } else if (category === 'div-3') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="div-3-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共79題)</div></label>`;
+            } else if (category === 'div-4') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="div-4-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共174題)</div></label>`;
+            } else if (category === 'div-5') {
+                html = `<label class="cursor-pointer"><input type="radio" name="mode" value="div-5-std" checked class="peer hidden"><div class="p-2.5 bg-white border-2 border-gray-200 rounded-xl text-xs font-bold peer-checked:${color.border} peer-checked:${color.activeBg} ${color.text}">標準模式 (共283題)</div></label>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // 螢幕鍵盤輸入與控制邏輯
+        function pressKey(key) {
+            const input = document.getElementById('manual-input');
+            if (key === 'clear') {
+                input.value = '';
+                lastTranscript = '';
+                document.getElementById('transcript').innerText = '（已清除）';
+            } else if (key === 'back') {
+                input.value = input.value.slice(0, -1);
+            } else {
+                if (input.value.length < 5) {
+                    input.value += key;
+                }
             }
         }
 
+        // 請求麥克風權限（針對 GAS 嵌入環境特別優化）
+        function requestMicPermission() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        stream.getTracks().forEach(track => track.stop());
+                        document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-microphone text-green-300"></i> 語音啟動中...`;
+                        if (recognition && isAnswering && !isPaused) {
+                            try { recognition.start(); } catch(e){}
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-keyboard text-yellow-300"></i> 請使用下方數字鍵盤作答`;
+                    });
+            }
+        }
+
+        // 初始化語音辨識
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                console.warn("瀏覽器不支援語音辨識。");
-                document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-keyboard text-amber-200"></i> 請使用下方螢幕鍵盤作答`;
+                document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-keyboard text-yellow-300"></i> 請使用下方數字鍵盤作答`;
                 return;
             }
 
@@ -488,10 +527,8 @@
             };
 
             recognition.onerror = (event) => {
-                console.warn("語音辨識事件/權限提示:", event.error);
                 if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                    // 當在 GAS Iframe 被 Chrome 安全政策阻擋時，顯示明確指引
-                    document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-300"></i> GAS網頁封鎖麥克風，請使用下方螢幕鍵盤作答`;
+                    document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-keyboard text-yellow-300"></i> 請使用下方數字鍵盤作答`;
                 }
             };
 
@@ -502,160 +539,107 @@
             };
         }
 
-        // 主動探測與啟動語音 (帶有完整錯誤 capture)
-        async function manualStartSpeech() {
-            if (!isAnswering || isPaused) return;
-            const micStatus = document.getElementById('mic-status-text');
-            micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-yellow-200"></i> 正在連線麥克風...`;
-
-            try {
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    await navigator.mediaDevices.getUserMedia({ audio: true });
-                }
-                if (!recognition) {
-                    initSpeechRecognition();
-                }
-                recognition.start();
-                micStatus.innerHTML = `<i class="fa-solid fa-microphone text-green-300"></i> 麥克風聆聽中... (請口述或用鍵盤)`;
-            } catch (err) {
-                console.warn("GAS iframe 封鎖麥克風權限或拒絕存取:", err);
-                micStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-300"></i> GAS網頁封鎖麥克風，請使用下方螢幕鍵盤作答`;
-            }
-        }
-
-        function pressKey(key) {
-            const input = document.getElementById('manual-input');
-            if (key === 'clear') {
-                input.value = '';
-            } else if (key === 'back') {
-                input.value = input.value.slice(0, -1);
-            } else {
-                input.value += key;
-            }
-        }
-
         function generateQuestions() {
-            const topic = document.querySelector('input[name="topic"]:checked').value;
+            const category = document.querySelector('input[name="category"]:checked').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
             let list = [];
 
-            if (topic === 'multiply') {
-                if (mode === 'mul-9x9-standard') {
+            if (category === 'mul-1') {
+                if (mode === 'mul-1-std') {
                     for (let i = 1; i <= 9; i++) {
                         for (let j = 1; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '×', ans: i * j });
+                            list.push({ display: `${i} × ${j} = ?`, ans: i * j });
                         }
                     }
-                } else if (mode === 'mul-9x9-same') {
+                } else {
                     for (let i = 1; i <= 9; i++) {
                         for (let j = i; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '×', ans: i * j });
+                            list.push({ display: `${i} × ${j} = ?`, ans: i * j });
                         }
                     }
-                } else if (mode === 'mul-10x10-standard') {
+                }
+            } else if (category === 'mul-2') {
+                if (mode === 'mul-2-std') {
                     for (let i = 1; i <= 10; i++) {
                         for (let j = 1; j <= 10; j++) {
-                            list.push({ a: i, b: j, op: '×', ans: i * j });
+                            list.push({ display: `${i} × ${j} = ?`, ans: i * j });
                         }
                     }
-                } else if (mode === 'mul-10x10-same') {
+                } else {
                     for (let i = 1; i <= 10; i++) {
                         for (let j = i; j <= 10; j++) {
-                            list.push({ a: i, b: j, op: '×', ans: i * j });
-                        }
-                    }
-                } else if (mode === 'mul-25') {
-                    for (let i = 1; i <= 8; i++) {
-                        list.push({ a: 25, b: i, op: '×', ans: 25 * i });
-                    }
-                } else if (mode === 'mul-125') {
-                    for (let i = 1; i <= 8; i++) {
-                        list.push({ a: 125, b: i, op: '×', ans: 125 * i });
-                    }
-                } else if (mode === 'mul-11_20x2_10') {
-                    for (let i = 11; i <= 20; i++) {
-                        for (let j = 2; j <= 10; j++) {
-                            list.push({ a: i, b: j, op: '×', ans: i * j });
+                            list.push({ display: `${i} × ${j} = ?`, ans: i * j });
                         }
                     }
                 }
-            } else if (topic === 'add') {
-                if (mode === 'add1-distinct') {
+            } else if (category === 'mul-3') {
+                for (let j = 1; j <= 8; j++) {
+                    list.push({ display: `25 × ${j} = ?`, ans: 25 * j });
+                }
+            } else if (category === 'mul-4') {
+                for (let j = 1; j <= 8; j++) {
+                    list.push({ display: `125 × ${j} = ?`, ans: 125 * j });
+                }
+            } else if (category === 'mul-5') {
+                for (let i = 11; i <= 20; i++) {
+                    for (let j = 2; j <= 10; j++) {
+                        list.push({ display: `${i} × ${j} = ?`, ans: i * j });
+                    }
+                }
+            } else if (category === 'add-1') {
+                if (mode === 'add-1-std') {
                     for (let i = 1; i <= 9; i++) {
                         for (let j = 1; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '+', ans: i + j });
+                            list.push({ display: `${i} + ${j} = ?`, ans: i + j });
                         }
                     }
-                } else if (mode === 'add1-same') {
+                } else {
                     for (let i = 1; i <= 9; i++) {
                         for (let j = i; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '+', ans: i + j });
-                        }
-                    }
-                } else if (mode === 'add10_19-standard') {
-                    for (let i = 10; i <= 19; i++) {
-                        for (let j = 1; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '+', ans: i + j });
-                        }
-                    }
-                } else if (mode === 'add_sum10') {
-                    for (let i = 1; i <= 9; i++) {
-                        list.push({ a: i, b: '?', op: '+', ans: 10 - i, display: `${i} + ? = 10` });
-                        list.push({ a: '?', b: i, op: '+', ans: 10 - i, display: `? + ${i} = 10` });
-                    }
-                }
-            } else if (topic === 'sub') {
-                if (mode === 'sub1-standard') {
-                    for (let i = 1; i <= 9; i++) {
-                        for (let j = 1; j <= i; j++) {
-                            list.push({ a: i, b: j, op: '-', ans: i - j });
-                        }
-                    }
-                } else if (mode === 'sub10_19-standard') {
-                    for (let i = 10; i <= 19; i++) {
-                        for (let j = 1; j <= 9; j++) {
-                            list.push({ a: i, b: j, op: '-', ans: i - j });
+                            list.push({ display: `${i} + ${j} = ?`, ans: i + j });
                         }
                     }
                 }
-            } else if (topic === 'divide') {
-                if (mode === 'div-basic') {
-                    for (let i = 2; i <= 9; i++) {
-                        for (let j = 1; j <= 9; j++) {
-                            let c = i * j;
-                            list.push({ a: c, b: i, op: '÷', ans: j });
-                        }
+            } else if (category === 'add-2') {
+                for (let i = 10; i <= 19; i++) {
+                    for (let j = 1; j <= 9; j++) {
+                        list.push({ display: `${i} + ${j} = ?`, ans: i + j });
                     }
-                } else if (mode === 'div-20') {
-                    for (let n = 2; n <= 20; n++) {
-                        for (let d = 2; d < n; d++) {
-                            if (n % d === 0) {
-                                list.push({ a: n, b: d, op: '÷', ans: n / d });
-                            }
-                        }
+                }
+            } else if (category === 'add-3') {
+                for (let i = 1; i <= 9; i++) {
+                    list.push({ display: `${i} + ? = 10`, ans: 10 - i });
+                    list.push({ display: `? + ${i} = 10`, ans: 10 - i });
+                }
+            } else if (category === 'sub-1') {
+                for (let i = 1; i <= 9; i++) {
+                    for (let j = 1; j <= i; j++) {
+                        list.push({ display: `${i} - ${j} = ?`, ans: i - j });
                     }
-                } else if (mode === 'div-40') {
-                    for (let n = 2; n <= 40; n++) {
-                        for (let d = 2; d < n; d++) {
-                            if (n % d === 0) {
-                                list.push({ a: n, b: d, op: '÷', ans: n / d });
-                            }
-                        }
+                }
+            } else if (category === 'sub-2') {
+                for (let i = 10; i <= 19; i++) {
+                    for (let j = 1; j <= 9; j++) {
+                        list.push({ display: `${i} - ${j} = ?`, ans: i - j });
                     }
-                } else if (mode === 'div-70') {
-                    for (let n = 2; n <= 70; n++) {
-                        for (let d = 2; d < n; d++) {
-                            if (n % d === 0) {
-                                list.push({ a: n, b: d, op: '÷', ans: n / d });
-                            }
-                        }
+                }
+            } else if (category === 'div-1') {
+                for (let i = 1; i <= 9; i++) {
+                    for (let j = 2; j <= 9; j++) {
+                        let product = i * j;
+                        list.push({ display: `${product} ÷ ${j} = ?`, ans: i });
                     }
-                } else if (mode === 'div-100') {
-                    for (let n = 2; n <= 100; n++) {
-                        for (let d = 2; d < n; d++) {
-                            if (n % d === 0) {
-                                list.push({ a: n, b: d, op: '÷', ans: n / d });
-                            }
+                }
+            } else {
+                let limit = 20;
+                if (category === 'div-3') limit = 40;
+                else if (category === 'div-4') limit = 70;
+                else if (category === 'div-5') limit = 100;
+
+                for (let n = 2; n <= limit; n++) {
+                    for (let d = 2; d < n; d++) {
+                        if (n % d === 0) {
+                            list.push({ display: `${n} ÷ ${d} = ?`, ans: n / d });
                         }
                     }
                 }
@@ -690,11 +674,9 @@
 
             document.getElementById('current-index').innerText = currentIndex + 1;
             const currentQ = questions[currentIndex];
-            const displayText = currentQ.display ? currentQ.display : `${currentQ.a} ${currentQ.op} ${currentQ.b} = ?`;
-            document.getElementById('card-question').innerText = displayText;
+            document.getElementById('card-question').innerText = currentQ.display;
             document.getElementById('transcript').innerText = '（聆聽中...）';
             document.getElementById('manual-input').value = '';
-            document.getElementById('mic-status-text').innerHTML = `<i class="fa-solid fa-microphone text-red-300"></i> 請說出答案 (或使用下方螢幕鍵盤)`;
             lastTranscript = '';
 
             if (recognition && !isPaused) {
@@ -728,9 +710,8 @@
             isAnswering = false;
             stopRecognition();
             
-            const qStr = currentQ.display ? currentQ.display : `${currentQ.a} ${currentQ.op} ${currentQ.b}`;
             wrongRecords.push({
-                question: qStr,
+                question: currentQ.display,
                 status: '時間到未作答',
                 userAns: lastTranscript ? lastTranscript : '無',
                 correctAns: currentQ.ans
@@ -756,9 +737,8 @@
                 micStatus.innerHTML = `<i class="fa-solid fa-pause text-amber-300"></i> 遊戲暫停中`;
             } else {
                 const currentQ = questions[currentIndex];
-                const displayText = currentQ.display ? currentQ.display : `${currentQ.a} ${currentQ.op} ${currentQ.b} = ?`;
-                card.innerText = displayText;
-                micStatus.innerHTML = `<i class="fa-solid fa-microphone text-red-300"></i> 請說出答案 (或使用下方螢幕鍵盤)`;
+                card.innerText = currentQ.display;
+                micStatus.innerHTML = `<i class="fa-solid fa-microphone text-red-300"></i> 請直接口述或點此啟動語音`;
                 
                 if (recognition) {
                     isAnswering = true;
@@ -785,10 +765,10 @@
             const btn = document.getElementById('pause-btn');
             if (isPaused) {
                 btn.innerHTML = `<i class="fa-solid fa-play"></i> 繼續遊戲`;
-                btn.className = "py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm";
+                btn.className = "py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5";
             } else {
                 btn.innerHTML = `<i class="fa-solid fa-pause"></i> 暫停遊戲`;
-                btn.className = "py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2 text-sm";
+                btn.className = "py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5";
             }
         }
 
@@ -799,9 +779,8 @@
             isPaused = false;
 
             for (let i = currentIndex; i < questions.length; i++) {
-                const qStr = questions[i].display ? questions[i].display : `${questions[i].a} ${questions[i].op} ${questions[i].b}`;
                 wrongRecords.push({
-                    question: qStr,
+                    question: questions[i].display,
                     status: '未作答(中止)',
                     userAns: '未作答',
                     correctAns: questions[i].ans
@@ -813,7 +792,6 @@
         function processSpokenAnswer(text) {
             if (!isAnswering || isPaused) return;
             
-            // 智慧修正同音字：八、九、四等常見發音
             text = text.replace(/把|爸|吧|爬/g, '八')
                        .replace(/求|走|酒|久/g, '九')
                        .replace(/是|事|市|室/g, '四');
@@ -839,37 +817,32 @@
 
             const map = {
                 '零': 0, '一': 1, '二': 2, '兩': 2, '三': 3, '四': 4,
-                '五': 5, '六': 6, '七': 7, '八': 8, '九': 9
+                '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10,
+                '百': 100, '千': 1000
             };
 
-            if (str === '一千' || str === '千') return 1000;
+            if (str === '一百') return 100;
+            if (str === '一千') return 1000;
 
-            if (str.includes('千') || str.includes('百') || str.includes('十')) {
-                let val = 0;
-                let temp = 0;
-                let hasCN = false;
+            if (str.includes('千')) {
+                let parts = str.split('千');
+                let thousands = map[parts[0]] || 1;
+                let remainder = parts[1] ? parseChineseNumberToInt(parts[1]) : 0;
+                return thousands * 1000 + remainder;
+            }
 
-                for (let i = 0; i < str.length; i++) {
-                    let char = str[i];
-                    if (map[char] !== undefined) {
-                        temp = map[char];
-                        hasCN = true;
-                    } else if (char === '千') {
-                        val += (temp || 1) * 1000;
-                        temp = 0;
-                        hasCN = true;
-                    } else if (char === '百') {
-                        val += (temp || 1) * 100;
-                        temp = 0;
-                        hasCN = true;
-                    } else if (char === '十') {
-                        val += (temp || 1) * 10;
-                        temp = 0;
-                        hasCN = true;
-                    }
-                }
-                val += temp;
-                if (hasCN && val > 0) return val;
+            if (str.includes('百')) {
+                let parts = str.split('百');
+                let hundreds = map[parts[0]] || 1;
+                let remainder = parts[1] ? parseChineseNumberToInt(parts[1]) : 0;
+                return hundreds * 100 + remainder;
+            }
+
+            if (str.includes('十')) {
+                let parts = str.split('十');
+                let tens = parts[0] === '' ? 1 : (map[parts[0]] || 1);
+                let ones = parts[1] ? (map[parts[1]] || 0) : 0;
+                return tens * 10 + ones;
             }
 
             let foundDigits = [];
@@ -879,17 +852,16 @@
                 }
             }
 
-            if (foundDigits.length >= 2) {
-                return foundDigits[0] * 10 + foundDigits[1];
-            } else if (foundDigits.length === 1) {
-                return foundDigits[0];
+            if (foundDigits.length > 0) {
+                return parseInt(foundDigits.join(''));
             }
 
             return null;
         }
 
         function submitManualAnswer() {
-            const val = parseInt(document.getElementById('manual-input').value);
+            const inputEl = document.getElementById('manual-input');
+            const val = parseInt(inputEl.value);
             if (!isNaN(val)) {
                 checkAnswer(val, val.toString());
             }
@@ -910,9 +882,8 @@
                 correctCount++;
                 showFeedback(true);
             } else {
-                const qStr = currentQ.display ? currentQ.display : `${currentQ.a} ${currentQ.op} ${currentQ.b}`;
                 wrongRecords.push({
-                    question: qStr,
+                    question: currentQ.display,
                     status: '回答錯誤',
                     userAns: rawText,
                     correctAns: currentQ.ans
@@ -958,18 +929,18 @@
             container.innerHTML = '';
 
             if (wrongRecords.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-green-600 font-bold"><i class="fa-solid fa-circle-check text-2xl mb-1"></i><br>太神啦！全數答對，無任何錯題記錄！</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-green-600 font-bold text-sm"><i class="fa-solid fa-circle-check text-2xl mb-1"></i><br>太神啦！全數答對，無任何錯題記錄！</div>`;
                 return;
             }
 
             let tableHTML = `
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="w-full text-left border-collapse text-xs md:text-sm">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700 border-b">
                             <th class="p-2 font-bold w-10 text-center">序號</th>
                             <th class="p-2 font-bold">題目</th>
                             <th class="p-2 font-bold">作答狀態</th>
-                            <th class="p-2 font-bold">學生回答</th>
+                            <th class="p-2 font-bold">回答</th>
                             <th class="p-2 font-bold">正確答案</th>
                         </tr>
                     </thead>
@@ -978,7 +949,7 @@
 
             wrongRecords.forEach((rec, idx) => {
                 tableHTML += `
-                    <tr class="border-b hover:bg-gray-50" style="page-break-inside: avoid; break-inside: avoid;">
+                    <tr class="border-b hover:bg-gray-50">
                         <td class="p-2 text-center text-gray-500">${idx + 1}</td>
                         <td class="p-2 font-bold text-indigo-700">${rec.question}</td>
                         <td class="p-2 text-red-600 font-medium">${rec.status}</td>
@@ -1000,51 +971,32 @@
             const element = document.getElementById('pdf-export-area');
             const container = document.getElementById('wrong-list-container');
             
+            window.scrollTo(0, 0);
+
             const prevMaxHeight = container.style.maxHeight;
             const prevOverflow = container.style.overflow;
-            
             container.style.maxHeight = 'none';
             container.style.overflow = 'visible';
 
-            const trs = element.querySelectorAll('tr');
-            trs.forEach(tr => {
-                tr.style.pageBreakInside = 'avoid';
-                tr.style.breakInside = 'avoid';
-            });
-
-            const prevScrollY = window.scrollY;
-            window.scrollTo(0, 0);
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     '數學計算能力挑戰王_錯題記錄.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 800 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
 
             setTimeout(() => {
-                const totalHeight = element.scrollHeight;
-                const opt = {
-                    margin:       [10, 10, 15, 10],
-                    filename:     '數學計算能力挑戰王_錯題記錄.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
-                        scale: 2, 
-                        useCORS: true, 
-                        logging: false, 
-                        letterRendering: true,
-                        scrollY: 0,
-                        height: totalHeight,
-                        windowHeight: totalHeight + 300
-                    },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-
                 html2pdf().from(element).set(opt).save().then(() => {
                     container.style.maxHeight = prevMaxHeight;
                     container.style.overflow = prevOverflow;
-                    window.scrollTo(0, prevScrollY);
                 }).catch((err) => {
                     console.error("PDF 匯出錯誤:", err);
                     container.style.maxHeight = prevMaxHeight;
                     container.style.overflow = prevOverflow;
-                    window.scrollTo(0, prevScrollY);
                 });
-            }, 250);
+            }, 300);
         }
 
         function resetGame() {
